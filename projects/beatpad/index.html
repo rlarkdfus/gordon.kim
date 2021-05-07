@@ -1,0 +1,181 @@
+<html>
+  <head>
+    <title>Gordon Kim</title>
+    <style>
+      .pad {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        border: 0;
+        background: transparent;
+        box-sizing: border-box;
+      }
+
+      .pad::before {
+        position: absolute;
+        content: "";
+        z-index: 3;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(#D3D3D3, #d3d3d3);
+        top: 0;
+        left: 0;
+        right: 0;
+        border-radius: 10px;
+        transition: top 0.1s ease;
+      }
+
+      .pad::after {
+        position: absolute;
+        content: "";
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+        background-color: #999;
+        top: 5px;
+        left: 0;
+        right: 0;
+        border-radius: 10px;
+      }
+
+      .pad.is-playing[data-row="0"]::after,
+      .pad:active[data-row="0"]::after{
+        background-color: #2961ba;
+      }
+
+      .pad.is-playing[data-row="0"]::before,
+      .pad:active[data-row="0"]::before{
+        top: 3px;
+        background: radial-gradient(#cff1ff, #b3e9ff 40%, #34b7eb 95%);
+      }
+
+
+      .pad.is-playing[data-row="1"]::after,
+      .pad:active[data-row="1"]::after{
+        background-color: #29BA4B;
+      }
+
+      .pad.is-playing[data-row="1"]::before,
+      .pad:active[data-row="1"]::before{
+        top: 3px;
+        background: radial-gradient(#CFFFDB, #B3FFBE 40%, #34EB64 95%);
+      }
+
+
+      .pad.is-playing[data-row="2"]::after,
+      .pad:active[data-row="2"]::after{
+        background-color: #BA2929;
+      }
+
+      .pad.is-playing[data-row="2"]::before,
+      .pad:active[data-row="2"]::before{
+        top: 3px;
+        background: radial-gradient(#FFCFCF, #FFB3B3 40%, #EB3434 95%);
+      }
+
+
+      .pad.is-playing[data-row="3"]::after,
+      .pad:active[data-row="3"]::after{
+        background-color: #BA7229;
+      }
+
+      .pad.is-playing[data-row="3"]::before,
+      .pad:active[data-row="3"]::before{
+        top: 3px;
+        background: radial-gradient(#FFECCF, #FFDEB3 40%, #EBA434 95%);
+      }
+      
+      .pad + .pad {
+        margin-left: 12px;
+      }
+
+      .row {
+        display: flex;
+      }
+
+      .row + .row {
+        margin-top: 12px;
+      }
+
+      #beatpad {
+        padding: 30px;
+        padding-bottom: 35px;
+        width: fit-content;
+        background-color: black;
+        z-index: 0;
+        margin: auto;
+        border-radius: 20px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="beatpad"></div>
+    <script>
+      const beatpad = document.getElementById("beatpad")
+      const ROW = 4
+      const COL = 4
+      const KEYMAP = [
+        ["1","2","3","4"],
+        ["q","w","e","r"],
+        ["a","s","d","f"],
+        ["z","x","c","v"]]
+      
+      function init() {
+        const padElements = []
+
+        for (let r=0; r<ROW; r++) {
+          const row = document.createElement("div")
+          row.className = "row"
+          beatpad.appendChild(row)
+          padElements[r] = []
+
+          for (let c=0; c<COL; c++){
+            const pad = document.createElement("button")
+            pad.className = "pad"
+            pad.dataset.row = r
+            row.appendChild(pad)
+            
+            const audio = new Audio(`./audiosamples/${COL*r+c}.wav`)
+            audio.preload = "auto"
+            padElements[r][c] = pad
+
+            pad.onclick = function () {
+              audio.currentTime = 0
+              audio.play()
+            }
+          }
+        }
+              
+        document.addEventListener("keydown", function(event) {
+          if (event.repeat) return
+          for (let r=0; r<ROW; r++) {
+            for (let c=0; c<COL; c++) {
+              if (KEYMAP[r][c] === event.key) {
+                padElements[r][c].classList.add("is-playing")
+                padElements[r][c].click()
+              }
+            }
+          }
+        })
+
+        document.addEventListener("keyup", function(event) {
+          if (event.repeat) return
+          for (let r=0; r<ROW; r++) {
+            for (let c=0; c<COL; c++) {
+              if (KEYMAP[r][c] === event.key) {
+                padElements[r][c].classList.remove("is-playing")
+              }
+            }
+          }
+        })
+      }
+
+      // - Custom sounds
+      // - Record padpresses
+      // - Loop
+
+      init()
+    </script>
+  </body>
+</html>

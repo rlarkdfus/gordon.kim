@@ -1,0 +1,23 @@
+.rubiks-face {
+  display: inline-block;
+  flex-direction: column;
+  background-color: lightgrey;
+  padding: 5px;
+}
+
+.rubiks-face-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.rubiks-face-element {
+  display: block;
+  width: 60px;
+  height: 60px;
+  background-color: grey;
+  margin: 2px;
+}
+
+#commandhistory {
+  max-width: 300px;
+}
