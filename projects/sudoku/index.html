@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>Sudoku</title>
+    <style>
+      
+    </style>
+  </head>
+  <body>
+    <div id="sudoku"></div>
+    
+    <script>
+      const sudoku = document.getElementById("sudoku")
+      const values = []
+
+      function init(){
+        for(int r=0; r<9; i++){ 
+          for(int c=0; c<9; c++){
+            const cell = document.createElement("input")
+            cell.type = "number"
+            sudoku.appendChild(cell)
+          }
+        }
+      }
+      init()
+      
+
+    </script>
+  </body>
+</html>

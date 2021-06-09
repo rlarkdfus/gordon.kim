@@ -1,5 +1,9 @@
 <html>
   <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap" rel="stylesheet">
+
     <title>Gordon Kim</title>
     <style>
       .pad {
@@ -38,47 +42,49 @@
         border-radius: 10px;
       }
 
+      .pad.is-pressed[data-row="0"]::after,
       .pad.is-playing[data-row="0"]::after,
       .pad:active[data-row="0"]::after{
         background-color: #2961ba;
       }
-
+      .pad.is-pressed[data-row="0"]::before,
       .pad.is-playing[data-row="0"]::before,
       .pad:active[data-row="0"]::before{
         top: 3px;
         background: radial-gradient(#cff1ff, #b3e9ff 40%, #34b7eb 95%);
       }
 
-
+      .pad.is-pressed[data-row="1"]::after,
       .pad.is-playing[data-row="1"]::after,
       .pad:active[data-row="1"]::after{
         background-color: #29BA4B;
       }
-
+      .pad.is-pressed[data-row="1"]::before,
       .pad.is-playing[data-row="1"]::before,
       .pad:active[data-row="1"]::before{
         top: 3px;
         background: radial-gradient(#CFFFDB, #B3FFBE 40%, #34EB64 95%);
       }
 
-
+      .pad.is-pressed[data-row="2"]::after,
       .pad.is-playing[data-row="2"]::after,
       .pad:active[data-row="2"]::after{
         background-color: #BA2929;
       }
 
+      .pad.is-pressed[data-row="2"]::before,
       .pad.is-playing[data-row="2"]::before,
       .pad:active[data-row="2"]::before{
         top: 3px;
         background: radial-gradient(#FFCFCF, #FFB3B3 40%, #EB3434 95%);
       }
 
-
+      .pad.is-pressed[data-row="3"]::after,
       .pad.is-playing[data-row="3"]::after,
       .pad:active[data-row="3"]::after{
         background-color: #BA7229;
       }
-
+      .pad.is-pressed[data-row="3"]::before,
       .pad.is-playing[data-row="3"]::before,
       .pad:active[data-row="3"]::before{
         top: 3px;
@@ -97,22 +103,125 @@
         margin-top: 12px;
       }
 
+      #beatpad-wrapper {
+        width: fit-content;
+        margin: auto;
+        display: flex;
+      }
+
       #beatpad {
         padding: 30px;
         padding-bottom: 35px;
         width: fit-content;
         background-color: black;
         z-index: 0;
-        margin: auto;
+        border-radius: 20px;
+      }
+      
+      #input-wrapper {
+        margin-left: 1em;
+        padding: 30px;
+        padding-bottom: 35px;
+        width: fit-content;
+        background-color: black;
+        z-index: 0;
         border-radius: 20px;
       }
 
+      .user {
+        font-family: "Roboto Condensed";
+        font-size: 1.15em;
+        font-weight: 900;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 13px;
+        position: relative;
+        background: transparent;
+        border: 0;
+        z-index: 500;
+        transform: translateY(-5px);
+        transition: transform 0.1s ease;
+        padding: 8px 12px;
+        width: 150px;
+        height: 75px;
+      }
+      
+      .user::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #d3d3d3;
+        z-index: -1;
+        border-radius: 5px;
+      }
+  
+      .user::before {
+        content: "";
+        position: absolute;
+        top: 5px;
+        bottom: -5px;
+        left: 0;
+        right: 0;
+        background-color: #999;
+        z-index: -2;
+        transition: top 0.1s ease, bottom 0.1s ease;
+        border-radius: 5px;
+      }
+
+      .user:active {
+        transform: translateY(-2px);
+      }
+
+      .user:active::before {
+        top: 2px;
+        bottom: -2px;
+      }
+      .is-toggled {
+        color: #542c04;
+      }
+      .is-toggled::before {
+        background-color: #BA7229;
+      }
+      
+      .is-toggled::after {
+        background: radial-gradient(#FFECCF, #FFDEB3 40%, #EBA434 95%);
+      }
+
+      #container {
+        width: fit-content;
+        margin: auto;
+      }
+
+      p {
+        font-family: "Roboto Condensed";
+      }
     </style>
   </head>
   <body>
-    <div id="beatpad"></div>
+    <div id="container">
+      <div id="beatpad-wrapper">
+        <div id="beatpad"></div>
+        <div id="input-wrapper">
+          <button onclick="uploadaudio()" class="user" id="uploadaudio">Upload Audio</button>
+          <button onclick="recordpress()" class="user" id="recordpress">Record Beat</button>
+          <button onclick="playhistory()" class="user" id="playhistory">Play Beat</button>
+        </div>
+      </div>
+      <p>To upload audio, press UPLOAD AUDIO</p>
+      <p>To record beat, press RECORD BEAT</p>
+      <p>To play beat, press PLAY BEAT</p>
+    </div>
+    
+
     <script>
       const beatpad = document.getElementById("beatpad")
+      const $uploadaudio = document.getElementById("uploadaudio")
+      const $recordpress = document.getElementById("recordpress")
+      const $playhistory = document.getElementById("playhistory")
+
       const ROW = 4
       const COL = 4
       const KEYMAP = [
@@ -121,13 +230,19 @@
         ["a","s","d","f"],
         ["z","x","c","v"]]
       
-      function init() {
-        const padElements = []
+      const audioElements = []
 
+      let toggle = undefined
+      let record = undefined
+      let history = []
+
+      const padElements = []
+      function init() {
         for (let r=0; r<ROW; r++) {
           const row = document.createElement("div")
           row.className = "row"
           beatpad.appendChild(row)
+          audioElements[r] = []
           padElements[r] = []
 
           for (let c=0; c<COL; c++){
@@ -139,10 +254,21 @@
             const audio = new Audio(`./audiosamples/${COL*r+c}.wav`)
             audio.preload = "auto"
             padElements[r][c] = pad
+            audioElements[r][c] = audio
 
             pad.onclick = function () {
-              audio.currentTime = 0
-              audio.play()
+              if (toggle !== undefined) {
+                audioElements[r][c] = toggle
+                toggle = undefined
+                return
+              }
+              if (record !== undefined) {
+                history.push([r, c, Date.now() - record])
+              }
+              audioElements[r][c].currentTime = 0
+              audioElements[r][c].play()
+              padElements[r][c].classList.add("is-playing")
+              setTimeout(() => padElements[r][c].classList.remove("is-playing"), 25)
             }
           }
         }
@@ -152,7 +278,7 @@
           for (let r=0; r<ROW; r++) {
             for (let c=0; c<COL; c++) {
               if (KEYMAP[r][c] === event.key) {
-                padElements[r][c].classList.add("is-playing")
+                padElements[r][c].classList.add("is-pressed")
                 padElements[r][c].click()
               }
             }
@@ -164,18 +290,48 @@
           for (let r=0; r<ROW; r++) {
             for (let c=0; c<COL; c++) {
               if (KEYMAP[r][c] === event.key) {
-                padElements[r][c].classList.remove("is-playing")
+                padElements[r][c].classList.remove("is-pressed")
               }
             }
           }
         })
       }
 
-      // - Custom sounds
+      function uploadaudio() {
+        let inputt = document.createElement('input')
+        inputt.type = "file";
+        inputt.onchange = _ => {
+          let asdf = Array.from(inputt.files)
+          const audio = new Audio(URL.createObjectURL(asdf[0]))
+          toggle = audio
+        } 
+        inputt.click() 
+      }
+
+      function recordpress() {
+        record = record !== undefined ? undefined : Date.now()
+        if (record) $recordpress.classList.add("is-toggled")
+        else $recordpress.classList.remove("is-toggled")
+      }
+
+      function playhistory() {
+        if (record) return
+        let lastEvent;
+        $playhistory.classList.add("is-toggled")
+        for (let event of history) {
+          setTimeout(() => {
+            padElements[event[0]][event[1]].click()
+          }, event[2])
+          lastEvent = event[2]
+        }
+        setTimeout(() => $playhistory.classList.remove("is-toggled"), lastEvent+200);
+      }
       // - Record padpresses
       // - Loop
-
       init()
+      
     </script>
+    
+    
   </body>
 </html>
