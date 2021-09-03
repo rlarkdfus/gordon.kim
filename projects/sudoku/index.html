@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <title>Sudoku</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200&display=swap" rel="stylesheet">
+    <style>
+      button {
+        width: 80px;
+        height: 80px;
+        text-align: center;
+        font-size: 50px;
+        border-radius: 0px;
+        margin: 0px;
+        display: block;
+        background-color: #f3f5f9;
+        border: 0;
+        border-right: 1px solid #000;
+        border-bottom: 1px solid #000;
+        font-family: Nunito, sans-serif;
+      }
+
+      button:first-child {
+        border-left: 3px solid #000;
+      }
+
+      button:nth-child(3n) {
+          border-right: 3px solid #000;
+      }
+      
+      button:focus {
+          outline: none;
+      }
+
+      .row {
+        display: flex;
+      }
+
+      .row:first-child button {
+          border-top: 3px solid #000;
+      }
+
+      .row:nth-child(3n) button {
+          border-bottom: 3px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sudoku"></div>
+    <script>
+      const sudoku = document.getElementById("sudoku")
+      const values = []
+      let selected_row = undefined
+      let selected_col = undefined
+      let template = [[1,2,3,4,5,6,7,8,9],
+                    [4,5,6,7,8,9,1,2,3],
+                    [7,8,9,1,2,3,4,5,6],
+                    [2,3,1,5,6,4,8,9,7],
+                    [5,6,4,8,9,7,2,3,1],
+                    [8,9,7,2,3,1,5,6,4],
+                    [3,1,2,6,4,5,9,7,8],
+                    [6,4,5,9,7,8,3,1,2],
+                    [9,7,8,3,1,2,6,4,5]]
+
+      function init(){
+        for(let r=0; r<9; r++){
+          const row = document.createElement("div")
+          row.className = "row"
+          values[r] = []
+          sudoku.appendChild(row)
+
+          for(let c=0; c<9; c++){
+            const cell = document.createElement("button")
+            row.appendChild(cell)
+            values[r][c] = cell
+            cell.onmousedown = function() {
+              select(r,c)
+            }
+          } 
+        }
+      }
+      init()
+
+      document.addEventListener("keydown", function(event) {
+        if (Number(event.key) > 0 && Number(event.key) < 10){
+          values[selected_row][selected_col].innerHTML = event.key
+          for (let i=0; i<9; i++) { 
+            for(let j=0; j<9; j++){
+              validate(i,j)
+            }
+          }
+        } 
+
+        if (event.code == "Backspace"){
+            values[selected_row][selected_col].innerHTML = ""
+            console.log(selected_row, selected_col, values[selected_row][selected_col].innerHTML)
+            for (let i=0; i<9; i++) { 
+                for(let j=0; j<9; j++){
+                validate(i,j)
+                }
+            }
+        } 
+        if(event.code == "ArrowUp"){ 
+            if(selected_row > 0) select(selected_row-1, selected_col)
+        }
+        if(event.code == "ArrowDown"){ 
+            if(selected_row < 8) select(selected_row+1, selected_col)
+        }
+        if(event.code == "ArrowLeft"){ 
+            if(selected_col > 0) select(selected_row, selected_col-1)
+        }
+        if(event.code == "ArrowRight"){ 
+            if(selected_col < 8) select(selected_row, selected_col+1)
+        }
+      })
+
+      function select(row, col) {
+        if (selected_row !== undefined && selected_col !== undefined) {
+          for (let i=0; i<9; i++) {
+            values[selected_row][i].style.backgroundColor = ""
+            values[i][selected_col].style.backgroundColor = ""
+          }
+          iterbox(selected_row, selected_col, (i, j) => values[i][j].style.backgroundColor = "")
+        }
+        selected_row = row
+        selected_col = col
+        for (let i=0; i<9; i++) {
+          values[selected_row][i].style.backgroundColor = "lightblue"
+          values[i][selected_col].style.backgroundColor = "lightblue"
+        }
+        iterbox(row, col, (i, j) => values[i][j].style.backgroundColor = "lightblue")
+        values[selected_row][selected_col].style.backgroundColor = "#4682B4"
+      }
+
+      function iterbox(row, col, callback) {
+        const box_row = Math.floor(row/3)
+        const box_col = Math.floor(col/3)
+
+        for(let i=0; i<3; i++){
+          for(let j=0; j<3; j++){
+            callback(box_row*3+i, box_col*3+j)
+          }
+        }
+      }
+      
+      function validate(row, col){
+        let valid = true
+        const check = (i, j, k, l) => {
+          if ((i != k || j != l) && values[i][j].innerHTML != "" && values[i][j].innerHTML == values[k][l].innerHTML) {
+            console.log(i, j, k, l)
+             valid = false;
+          }
+        }
+        for(let i=0; i<9; i++){
+          check(row, col, row, i)
+          check(row, col, i, col)
+        }
+
+        iterbox(row, col, (i, j) => check(row, col, i, j))
+        values[row][col].style.color = valid ? "black" : "red"
+      }
+    </script>
+  </body>
+</html>
